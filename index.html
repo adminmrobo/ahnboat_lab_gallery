@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ahn-boat Lab 식구 갤러리</title>
+<meta name="description" content="Ahn-boat Lab 연구실 식구(박사·하루·초파리 연구원·주판봇·시아·모아·X1~X3)의 그림을 원본·프롬프트·콘텐츠·저장소·생성일과 함께 모아 보는 갤러리">
+<link rel="preconnect" href="https://raw.githubusercontent.com">
+<link rel="preconnect" href="https://wsrv.nl">
+<style>
+:root{
+  --bg:#ffffff; --ink:#1f2430; --sub:#5b6474; --line:#e3e7ee; --soft:#f5f7fa;
+  --teal:#0f8f84; --teal-soft:#e3f4f2; --orange:#e8731a; --navy:#1e2f6e; --warn:#b3261e; --warn-soft:#fdecea;
+  --r:10px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 "Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif}
+a{color:var(--teal)}
+button{font:inherit;cursor:pointer}
+header{padding:28px 20px 8px;max-width:1400px;margin:0 auto}
+h1{margin:0;font-size:26px;letter-spacing:-.02em}
+h1 small{font-size:14px;font-weight:500;color:var(--sub);margin-left:8px}
+.lead{margin:6px 0 0;color:var(--sub)}
+.wrap{max-width:1400px;margin:0 auto;padding:0 20px 60px}
+
+/* 캐릭터 내비게이터 */
+.nav{display:flex;gap:10px;overflow-x:auto;padding:16px 2px 10px;scrollbar-width:thin}
+.who{flex:0 0 auto;width:96px;border:2px solid var(--line);border-radius:var(--r);background:#fff;padding:8px 4px 6px;text-align:center;position:relative;transition:border-color .15s, transform .15s}
+.who:hover{transform:translateY(-2px)}
+.who img{width:64px;height:64px;object-fit:contain;image-rendering:pixelated;display:block;margin:0 auto 4px;background:var(--soft);border-radius:8px}
+.who b{display:block;font-size:13px;line-height:1.25}
+.who span{font-size:12px;color:var(--sub)}
+.who[aria-pressed="true"]{border-color:var(--teal);background:var(--teal-soft)}
+.who.all img{display:flex}
+.who .tm{position:absolute;top:4px;right:4px;font-size:10px;font-weight:700;color:#fff;background:var(--warn);border-radius:4px;padding:0 4px}
+
+/* 검색·거르기 */
+.bar{position:sticky;top:0;z-index:5;background:rgba(255,255,255,.96);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);padding:10px 0;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.search{flex:1 1 320px;display:flex;align-items:center;gap:8px;border:2px solid var(--line);border-radius:999px;padding:6px 14px;background:#fff}
+.search:focus-within{border-color:var(--teal)}
+.search input{border:0;outline:0;flex:1;font:inherit;min-width:0}
+.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 12px;font-size:13px;color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+select{font:inherit;font-size:13px;border:1px solid var(--line);border-radius:8px;padding:5px 8px;background:#fff}
+.mode{font-size:12px;color:var(--sub)}
+.status{margin:12px 0 10px;color:var(--sub);font-size:14px}
+.status b{color:var(--ink)}
+.notice{margin:14px 0 0;border:1px solid #f3c1bc;background:var(--warn-soft);color:#7a1d17;border-radius:var(--r);padding:10px 14px;font-size:13.5px}
+
+/* 그리드 */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.card{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:#fff;display:flex;flex-direction:column;cursor:pointer;text-align:left;padding:0;transition:box-shadow .15s, transform .15s}
+.card:hover{box-shadow:0 6px 18px rgba(20,30,50,.10);transform:translateY(-2px)}
+.card .ph{aspect-ratio:1/1;background:var(--soft) repeating-conic-gradient(#eef1f5 0 25%, #fff 0 50%) 0 0/16px 16px;display:flex;align-items:center;justify-content:center;position:relative}
+.card img{max-width:100%;max-height:100%;object-fit:contain;image-rendering:pixelated}
+.card .meta{padding:8px 10px 10px;font-size:12.5px;line-height:1.4}
+.card .t{font-weight:600;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card .s{color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.badges{position:absolute;left:6px;top:6px;display:flex;gap:4px;flex-wrap:wrap}
+.bd{font-size:11px;background:rgba(31,36,48,.78);color:#fff;border-radius:4px;padding:1px 6px}
+.bd.p{background:var(--teal)}
+.bd.tm{background:var(--warn)}
+.more{display:block;margin:22px auto 0;padding:10px 26px;border-radius:999px;border:2px solid var(--ink);background:#fff;font-weight:600}
+.empty{padding:60px 0;text-align:center;color:var(--sub)}
+
+/* 상세 */
+dialog{border:0;border-radius:14px;padding:0;width:min(1180px,96vw);max-height:94vh;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+dialog::backdrop{background:rgba(15,20,30,.55)}
+.dl{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);max-height:94vh}
+.dl .view{background:var(--soft) repeating-conic-gradient(#eef1f5 0 25%, #fff 0 50%) 0 0/20px 20px;display:flex;align-items:center;justify-content:center;padding:16px;min-height:320px}
+.dl .view img{max-width:100%;max-height:82vh;object-fit:contain;image-rendering:pixelated}
+.dl .info{padding:18px 20px 20px;overflow:auto;max-height:94vh}
+.dl h2{margin:0 36px 4px 0;font-size:19px;line-height:1.35;word-break:break-all}
+.x{position:absolute;right:12px;top:10px;border:0;background:#fff;border-radius:50%;width:34px;height:34px;font-size:20px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+table.kv{width:100%;border-collapse:collapse;font-size:13.5px;margin:10px 0}
+table.kv th{width:96px;text-align:left;color:var(--sub);font-weight:500;vertical-align:top;padding:6px 8px 6px 0;border-top:1px solid var(--line)}
+table.kv td{padding:6px 0;border-top:1px solid var(--line);word-break:break-all}
+.btns{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px}
+.btn{display:inline-block;text-decoration:none;border:1px solid var(--ink);border-radius:8px;padding:6px 12px;font-size:13px;color:var(--ink);background:#fff}
+.btn.pri{background:var(--ink);color:#fff}
+.ptitle{display:flex;justify-content:space-between;align-items:center;margin:16px 0 6px}
+.ptitle h3{margin:0;font-size:15px}
+pre.prompt{white-space:pre-wrap;word-break:break-word;background:#f7f8fb;border:1px solid var(--line);border-radius:8px;padding:12px;font:12.5px/1.6 ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;margin:0;max-height:340px;overflow:auto}
+.note{font-size:12.5px;color:var(--sub);margin:6px 0 0}
+.tmbox{border:1px solid #f3c1bc;background:var(--warn-soft);color:#7a1d17;border-radius:8px;padding:10px 12px;font-size:13px;margin:10px 0}
+.tags{display:flex;gap:4px;flex-wrap:wrap}
+.tag{font-size:12px;border-radius:999px;background:var(--teal-soft);color:#0b5f58;padding:1px 9px;border:0}
+.tag.tm{background:var(--warn-soft);color:var(--warn)}
+mark{background:#ffe9a8;padding:0}
+footer{border-top:1px solid var(--line);margin-top:40px;padding:18px 20px 40px;color:var(--sub);font-size:13px;max-width:1400px;margin-left:auto;margin-right:auto}
+@media (max-width:820px){.dl{grid-template-columns:1fr}.dl .view img{max-height:50vh}.who{width:82px}.who img{width:52px;height:52px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Ahn-boat Lab 식구 갤러리 <small id="genDate"></small></h1>
+  <p class="lead">연구실 식구들이 지금까지 등장한 그림을 한곳에 모았습니다. 그림을 누르면 원본, 만든 프롬프트, 실린 콘텐츠, 저장소 주소, 생성일을 볼 수 있습니다.</p>
+  <div class="notice" role="note"><b>MONEY-ROBO</b>는 (주)M-Robo의 상표권이 있는 캐릭터로, <b>비상업적·상업적 이용이 모두 제한</b>됩니다.</div>
+</header>
+
+<div class="wrap">
+  <nav class="nav" id="nav" aria-label="캐릭터 내비게이터"></nav>
+  <p class="note" style="margin:0 0 6px">캐릭터를 누르면 그 캐릭터 그림만 보입니다. 여러 명을 누르면 함께 나오는 그림을 찾고, ‘모두’를 누르면 처음으로 돌아갑니다.</p>
+
+  <div class="bar">
+    <label class="search">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="검색: 캐릭터·표정·콘텐츠 이름·저장소·파일·프롬프트 (예: 하루 기쁨, cover, 공변미분, maid)" autocomplete="off">
+    </label>
+    <div id="kinds" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+    <select id="repo" aria-label="콘텐츠"><option value="">모든 콘텐츠</option></select>
+    <select id="month" aria-label="생성 월"><option value="">모든 날짜</option></select>
+    <button class="chip" id="onlyP" aria-pressed="false">프롬프트 있는 것만</button>
+    <select id="sort" aria-label="정렬">
+      <option value="new">최근 것부터</option>
+      <option value="old">오래된 것부터</option>
+      <option value="repo">콘텐츠별</option>
+    </select>
+    <span class="mode" id="modeTxt"></span>
+  </div>
+
+  <div class="status" id="status">불러오는 중…</div>
+  <div class="grid" id="grid"></div>
+  <button class="more" id="more" hidden>더 보기</button>
+</div>
+
+<dialog id="dlg" aria-label="그림 상세">
+  <div style="position:relative">
+    <button class="x" id="close" aria-label="닫기">×</button>
+    <div class="dl">
+      <div class="view"><img id="dImg" alt=""></div>
+      <div class="info" id="dInfo"></div>
+    </div>
+  </div>
+</dialog>
+
+<footer>
+  <p><b>MONEY-ROBO</b>는 (주)M-Robo의 상표권이 있는 캐릭터입니다. 이 갤러리에 실린 MONEY-ROBO 그림은 기록 보관용이며, 비상업적 이용과 상업적 이용이 모두 제한됩니다.</p>
+  <p>생성일은 그림 파일이 GitHub 저장소에 처음 올라간 날입니다. 프롬프트는 각 저장소의 그림 요청서(md)와 명세(json)에서 자동으로 연결했습니다. 시트에서 잘라 낸 컷은 원래 시트를 만든 프롬프트를 보여 줍니다.</p>
+  <p>데이터: <a href="data/gallery.json">gallery.json</a> · <a href="data/prompts.json">prompts.json</a> · 저장소 <a href="https://github.com/adminmrobo/ahnboat_lab_gallery">adminmrobo/ahnboat_lab_gallery</a> · 글 · 안상선 ((주)M-Robo 대표)</p>
+</footer>
+
+<script>
+(function(){
+const OWNER = "adminmrobo";
+const PAGE = 60;
+const AVATAR = {
+  doctor:"images/doctor/E13_neutral.png", haru:"images/haru/E13_neutral.png", fruitfly:"images/fruitfly/E13_neutral.png",
+  jupanbot:"images/jupanbot/E13_neutral.png", sia:"images/sia/E13_neutral.png", moa:"images/moa/E13_neutral.png",
+  x1:"images/x1/E13_neutral.png", x2:"images/x2/E13_neutral.png", x3:"images/x3/E13_neutral.png",
+  money_robo:"archive/money_robo/images/E13_neutral.png"
+};
+// 검색어 별칭 (한국어·영어 이름, 직함)
+const ALIAS = {
+  doctor:["박사","doctor","professor","prof","scientist","박사님"],
+  haru:["하루","조수","haru","assistant","asst"],
+  fruitfly:["초파리","초파리연구원","초파리 연구원","fruitfly","fruit fly","fly"],
+  jupanbot:["주판봇","jupanbot","ababot","로봇","robot","robo"],
+  sia:["시아","sia","인턴 시아"], moa:["모아","moa","인턴 모아"],
+  x1:["x1"], x2:["x2"], x3:["x3"],
+  money_robo:["money-robo","moneyrobo","money robo","머니로보","머니 로보","money_robo"]
+};
+// 표정 이름 (파일 이름의 영어 → 한국어 검색)
+const EXPR = {joy:"기쁨",sadness:"슬픔",anger:"분노 화남",surprise:"놀람",fear:"두려움",disgust:"혐오",embarrassed:"당황 부끄러움",
+  thinking:"생각 고민",confused:"혼란 갸웃",neutral:"기본 무표정",wink:"윙크",smile:"미소 웃음",proud:"뿌듯 자랑",flustered:"허둥지둥 당황",
+  sleepy:"졸림",sulking:"삐침 시무룩",sparkle:"반짝 감동",shock:"충격",cry:"울음",cheer:"응원",tea:"차",angry:"화남",blush:"홍조 부끄러움",
+  calc:"계산",coin:"동전",happy:"행복 기쁨",sigh:"한숨",wow:"감탄",think:"생각",signal:"신호",doze:"졸기",report:"보고",firm:"단호",
+  judge:"심판 판정",magic:"마법",board:"칠판",point:"가리키기",arms:"팔짱",magnify:"돋보기",coffee:"커피",clip:"클립보드",front:"정면",back:"뒷모습",side:"옆모습"};
+const KIND_ORDER = ["cover","scene","expression","motion","sheet","etc"];
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const encPath = p => p.split("/").map(encodeURIComponent).join("/");
+const rawUrl = (r,b,p) => `https://raw.githubusercontent.com/${OWNER}/${r}/${b||"main"}/${encPath(p)}`;
+const blobUrl = (r,b,p) => `https://github.com/${OWNER}/${r}/blob/${b||"main"}/${encPath(p)}`;
+const repoUrl = r => `https://github.com/${OWNER}/${r}`;
+const thumbUrl = raw => `https://wsrv.nl/?url=${encodeURIComponent(raw.replace(/^https:\/\//,""))}&w=360&h=360&fit=inside&output=webp&filt=nearest`;
+
+let DATA=null, PROMPTS=null, items=[], view=[], shown=0;
+const state = {chars:new Set(), kinds:new Set(), q:"", repo:"", month:"", onlyP:false, sort:"new", match:"and"};
+
+function charName(k){ const c = DATA.characters.find(x=>x.key===k); return c ? c.ko : k; }
+
+function readHash(){
+  const h = new URLSearchParams(location.hash.slice(1));
+  state.chars = new Set((h.get("c")||"").split(",").filter(Boolean));
+  state.kinds = new Set((h.get("k")||"").split(",").filter(Boolean));
+  state.q = h.get("q")||""; state.repo = h.get("r")||""; state.month = h.get("m")||"";
+  state.onlyP = h.get("p")==="1"; state.sort = h.get("s")||"new"; state.match = h.get("o")==="or"?"or":"and";
+  return h.get("id");
+}
+function writeHash(openId){
+  const h = new URLSearchParams();
+  if(state.chars.size) h.set("c",[...state.chars].join(","));
+  if(state.kinds.size) h.set("k",[...state.kinds].join(","));
+  if(state.q) h.set("q",state.q);
+  if(state.repo) h.set("r",state.repo);
+  if(state.month) h.set("m",state.month);
+  if(state.onlyP) h.set("p","1");
+  if(state.sort!=="new") h.set("s",state.sort);
+  if(state.match==="or") h.set("o","or");
+  if(openId) h.set("id",openId);
+  const s = h.toString();
+  history.replaceState(null,"",s ? "#"+s : location.pathname+location.search);
+}
+
+function buildIndex(){
+  for(const it of items){
+    const rm = DATA.repos[it.r]||{};
+    const stem = it.f.replace(/\.[^.]+$/,"").toLowerCase();
+    const exprKo = stem.split(/[_\-.]+/).map(t=>EXPR[t]||"").join(" ");
+    const names = it.c.map(k=>(ALIAS[k]||[k]).join(" ")+" "+charName(k)).join(" ");
+    const uses = it.u.map(r=>r+" "+((DATA.repos[r]||{}).title||"")).join(" ");
+    it._title = rm.title || it.r;
+    it._base = [it.f, it.p, it.r, it._title, rm.cat, rm.sub, it.t, names, exprKo, DATA.kinds[it.k], it.d, uses].join(" ").toLowerCase();
+    it._text = it._base;
+  }
+}
+function attachPrompts(){
+  for(const it of items){ const p = PROMPTS[it.id]; if(p) it._text = it._base + " " + (p.p||"").toLowerCase(); }
+}
+
+function filter(){
+  const terms = state.q.toLowerCase().split(/\s+/).filter(Boolean);
+  view = items.filter(it=>{
+    if(state.chars.size){
+      if(state.match==="and"){ for(const c of state.chars) if(!it.c.includes(c)) return false; }
+      else if(!it.c.some(c=>state.chars.has(c))) return false;
+    }
+    if(state.kinds.size && !state.kinds.has(it.k)) return false;
+    if(state.repo && !it.u.includes(state.repo)) return false;
+    if(state.month && !(it.d||"").startsWith(state.month)) return false;
+    if(state.onlyP && !it.hp) return false;
+    for(const t of terms) if(!it._text.includes(t)) return false;
+    return true;
+  });
+  if(state.sort==="old") view.sort((a,b)=>(a.d||"9").localeCompare(b.d||"9"));
+  else if(state.sort==="repo") view.sort((a,b)=>a._title.localeCompare(b._title,"ko")||a.f.localeCompare(b.f));
+  else view.sort((a,b)=>(b.d||"").localeCompare(a.d||""));
+}
+
+function card(it){
+  const raw = rawUrl(it.r,it.b,it.p);
+  const tm = it.c.includes("money_robo");
+  const names = it.c.map(charName).join(" · ");
+  return `<button class="card" data-id="${it.id}" title="${esc(it.f)}">
+    <div class="ph">
+      <img loading="lazy" decoding="async" src="${thumbUrl(raw)}" data-raw="${esc(raw)}" alt="${esc((names||"연구실")+" — "+it.f)}">
+      <div class="badges"><span class="bd">${esc(DATA.kinds[it.k]||it.k)}</span>${it.hp?'<span class="bd p">프롬프트</span>':''}${tm?'<span class="bd tm">상표</span>':''}</div>
+    </div>
+    <div class="meta"><div class="t">${esc(names||it.f)}</div><div class="s">${esc(it._title)}</div><div class="s">${esc(it.d||"날짜 없음")} · ${esc(it.f)}</div></div>
+  </button>`;
+}
+
+function render(reset){
+  const g = $("#grid");
+  if(reset){ g.innerHTML=""; shown=0; }
+  const slice = view.slice(shown, shown+PAGE);
+  g.insertAdjacentHTML("beforeend", slice.map(card).join(""));
+  shown += slice.length;
+  $("#more").hidden = shown >= view.length;
+  $("#status").innerHTML = view.length
+    ? `<b>${view.length.toLocaleString()}</b>장 중 ${shown.toLocaleString()}장 표시 · 전체 ${items.length.toLocaleString()}장`
+    : "";
+  if(!view.length) g.innerHTML = `<div class="empty">조건에 맞는 그림이 없습니다. 검색어나 캐릭터 선택을 줄여 보세요.</div>`;
+}
+
+function refresh(){ filter(); render(true); syncUI(); writeHash(); }
+
+function syncUI(){
+  document.querySelectorAll(".who").forEach(b=>{
+    const k=b.dataset.k; b.setAttribute("aria-pressed", k==="" ? String(state.chars.size===0) : String(state.chars.has(k)));
+  });
+  document.querySelectorAll("#kinds .chip").forEach(b=>b.setAttribute("aria-pressed", String(state.kinds.has(b.dataset.k))));
+  $("#onlyP").setAttribute("aria-pressed", String(state.onlyP));
+  $("#q").value = state.q; $("#repo").value = state.repo; $("#month").value = state.month; $("#sort").value = state.sort;
+  $("#modeTxt").innerHTML = state.chars.size>1
+    ? `여러 캐릭터: <a href="#" id="tg">${state.match==="and"?"모두 함께 나오는 그림":"하나라도 나오는 그림"}</a>` : "";
+  const tg = $("#tg"); if(tg) tg.onclick = e=>{e.preventDefault(); state.match = state.match==="and"?"or":"and"; refresh();};
+}
+
+function buildControls(){
+  const counts = {}; for(const it of items) for(const c of it.c) counts[c]=(counts[c]||0)+1;
+  const fx = r => `https://raw.githubusercontent.com/${OWNER}/fruitfly-lab-expressions/main/${r}`;
+  let html = `<button class="who all" data-k=""><img src="${fx(AVATAR.haru)}" alt="" style="opacity:.0;position:absolute"><div style="width:64px;height:64px;margin:0 auto 4px;border-radius:8px;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:22px">★</div><b>모두</b><span>${items.length.toLocaleString()}</span></button>`;
+  for(const c of DATA.characters){
+    const tm = c.key==="money_robo";
+    html += `<button class="who" data-k="${c.key}" title="${esc(c.ko)}${tm?" — (주)M-Robo 상표권 캐릭터, 이용 제한":""}">
+      ${tm?'<span class="tm">™</span>':''}<img src="${fx(AVATAR[c.key])}" alt="" loading="lazy"><b>${esc(c.ko)}</b><span>${(counts[c.key]||0).toLocaleString()}</span></button>`;
+  }
+  $("#nav").innerHTML = html;
+  $("#nav").onclick = e=>{
+    const b = e.target.closest(".who"); if(!b) return;
+    const k = b.dataset.k;
+    if(!k) state.chars.clear();
+    else state.chars.has(k) ? state.chars.delete(k) : state.chars.add(k);
+    refresh();
+  };
+  const kc = {}; for(const it of items) kc[it.k]=(kc[it.k]||0)+1;
+  $("#kinds").innerHTML = KIND_ORDER.filter(k=>kc[k]).map(k=>`<button class="chip" data-k="${k}">${esc(DATA.kinds[k])} ${kc[k]}</button>`).join("");
+  $("#kinds").onclick = e=>{ const b=e.target.closest(".chip"); if(!b) return; const k=b.dataset.k; state.kinds.has(k)?state.kinds.delete(k):state.kinds.add(k); refresh(); };
+  const rc = {}; for(const it of items) for(const r of it.u) rc[r]=(rc[r]||0)+1;
+  const repos = Object.keys(rc).sort((a,b)=>((DATA.repos[a]||{}).title||a).localeCompare((DATA.repos[b]||{}).title||b,"ko"));
+  $("#repo").insertAdjacentHTML("beforeend", repos.map(r=>`<option value="${esc(r)}">${esc((DATA.repos[r]||{}).title||r)} (${rc[r]})</option>`).join(""));
+  const months = [...new Set(items.map(i=>(i.d||"").slice(0,7)).filter(Boolean))].sort().reverse();
+  $("#month").insertAdjacentHTML("beforeend", months.map(m=>`<option value="${m}">${m.replace("-","년 ")}월</option>`).join(""));
+  let t; $("#q").addEventListener("input", e=>{ clearTimeout(t); t=setTimeout(()=>{ state.q=e.target.value.trim(); refresh(); },180); });
+  $("#repo").onchange = e=>{ state.repo=e.target.value; refresh(); };
+  $("#month").onchange = e=>{ state.month=e.target.value; refresh(); };
+  $("#sort").onchange = e=>{ state.sort=e.target.value; refresh(); };
+  $("#onlyP").onclick = ()=>{ state.onlyP=!state.onlyP; refresh(); };
+  $("#more").onclick = ()=>render(false);
+  new IntersectionObserver(es=>{ if(es[0].isIntersecting && !$("#more").hidden) render(false); },{rootMargin:"600px"}).observe($("#more"));
+}
+
+function open(id){
+  const it = items.find(x=>x.id===id); if(!it) return;
+  const rm = DATA.repos[it.r]||{};
+  const raw = rawUrl(it.r,it.b,it.p);
+  const tm = it.c.includes("money_robo");
+  $("#dImg").src = raw; $("#dImg").alt = it.f;
+  const p = PROMPTS ? PROMPTS[it.id] : null;
+  const usesHtml = it.u.map(r=>{ const m=DATA.repos[r]||{}; return `<a href="${repoUrl(r)}" target="_blank" rel="noopener">${esc(m.title||r)}</a>`; }).join("<br>");
+  let ph = "";
+  if(it.hp && !PROMPTS) ph = `<p class="note">프롬프트를 불러오는 중…</p>`;
+  else if(p){
+    const srcRepo = p.src.split("/")[0], srcPath = p.src.slice(srcRepo.length+1);
+    const srcB = (DATA.repos[srcRepo]||{}).branch||"main";
+    ph = `<div class="ptitle"><h3>${p.sum?"그림 지시문 (요약)":"프롬프트"}</h3><button class="btn" id="cp">복사</button></div>
+      <pre class="prompt" id="pp">${esc(p.p)}</pre>
+      ${p.n?`<div class="ptitle"><h3>네거티브 프롬프트</h3></div><pre class="prompt">${esc(p.n)}</pre>`:""}
+      ${p.cut?`<p class="note">이 그림은 시트에서 잘라 낸 컷입니다. 위 프롬프트는 시트 전체를 만든 것입니다${typeof p.cut==="string"?` (시트: ${esc(p.cut)})`:""}.</p>`:""}
+      ${p.sum?`<p class="note">요청서에 영어 프롬프트 대신 장면 요지만 적혀 있어 그 문장을 보여 줍니다.</p>`:""}
+      <p class="note">출처: <a href="${blobUrl(srcRepo,srcB,srcPath)}" target="_blank" rel="noopener">${esc(p.src)}</a></p>`;
+  } else ph = `<div class="ptitle"><h3>프롬프트</h3></div><p class="note">이 그림에 연결된 프롬프트 기록을 찾지 못했습니다 (요청서가 없거나 파일 이름이 달라 자동 연결이 안 된 경우).</p>`;
+  $("#dInfo").innerHTML = `
+    <h2>${esc(it.f)}</h2>
+    <div class="tags">${it.c.map(c=>`<button class="tag ${c==="money_robo"?"tm":""}" data-c="${c}">${esc(charName(c))}</button>`).join("")}<span class="tag" style="background:#eef1f5;color:#444">${esc(DATA.kinds[it.k]||it.k)}</span></div>
+    ${tm?`<div class="tmbox"><b>MONEY-ROBO</b>는 (주)M-Robo의 상표권이 있는 캐릭터로, 비상업적·상업적 이용이 모두 제한됩니다.</div>`:""}
+    <div class="btns">
+      <a class="btn pri" href="${raw}" target="_blank" rel="noopener">원본 이미지</a>
+      <a class="btn" href="${blobUrl(it.r,it.b,it.p)}" target="_blank" rel="noopener">GitHub에서 보기</a>
+      ${rm.site?`<a class="btn" href="${esc(rm.site)}" target="_blank" rel="noopener">콘텐츠 사이트</a>`:""}
+    </div>
+    <table class="kv">
+      <tr><th>콘텐츠</th><td>${esc(rm.title||it.r)}${rm.cat?`<br><span class="note">${esc(rm.cat)}${rm.sub?" › "+esc(rm.sub):""}</span>`:""}</td></tr>
+      <tr><th>저장소</th><td><a href="${repoUrl(it.r)}" target="_blank" rel="noopener">github.com/${OWNER}/${esc(it.r)}</a></td></tr>
+      <tr><th>파일 경로</th><td>${esc(it.p)}</td></tr>
+      <tr><th>생성일</th><td>${esc(it.d||"알 수 없음")} <span class="note">(저장소에 처음 올라간 날)</span></td></tr>
+      ${it.t?`<tr><th>명세 이름</th><td>${esc(it.t)}</td></tr>`:""}
+      <tr><th>쓰인 곳</th><td>${usesHtml}${it.n>it.u.length?`<br><span class="note">같은 그림 ${it.n}곳에 실림</span>`:""}</td></tr>
+    </table>
+    ${ph}`;
+  const cp = $("#cp"); if(cp) cp.onclick = ()=>{ navigator.clipboard.writeText($("#pp").textContent).then(()=>{cp.textContent="복사됨"; setTimeout(()=>cp.textContent="복사",1200);}); };
+  $("#dInfo").querySelectorAll(".tag[data-c]").forEach(b=>b.onclick=()=>{ state.chars=new Set([b.dataset.c]); $("#dlg").close(); refresh(); });
+  if(!$("#dlg").open) $("#dlg").showModal();
+  writeHash(id);
+}
+
+$("#grid").addEventListener("click", e=>{ const c=e.target.closest(".card"); if(c) open(c.dataset.id); });
+$("#grid").addEventListener("error", e=>{ const im=e.target; if(im.tagName==="IMG" && im.dataset.raw && im.src!==im.dataset.raw){ im.src = im.dataset.raw; } }, true);
+$("#close").onclick = ()=>$("#dlg").close();
+$("#dlg").addEventListener("click", e=>{ if(e.target===$("#dlg")) $("#dlg").close(); });
+$("#dlg").addEventListener("close", ()=>writeHash());
+
+fetch("data/gallery.json").then(r=>r.json()).then(d=>{
+  DATA=d; items=d.items;
+  $("#genDate").textContent = `${items.length.toLocaleString()}장 · ${d.generated} 갱신`;
+  buildIndex(); buildControls();
+  const openId = readHash();
+  refresh();
+  if(openId) open(openId);
+  return fetch("data/prompts.json").then(r=>r.json()).then(p=>{
+    PROMPTS=p; attachPrompts();
+    if(state.q) refresh();
+    const id = new URLSearchParams(location.hash.slice(1)).get("id");
+    if(id && $("#dlg").open) open(id);
+  });
+}).catch(err=>{ $("#status").textContent = "데이터를 불러오지 못했습니다: "+err; });
+})();
+</script>
+</body>
+</html>
