@@ -1,0 +1,5 @@
+# 갤러리에 자동으로 넣지 않을 저장소 (sync_repos.py가 읽는다)
+ahnboat_lab_gallery
+test
+g2b-bid-strategy
+drug-crime-social-cost
