@@ -166,3 +166,14 @@ optimization_test_lab
 topology_ai_lab
 usa_stock_reporter_project_python_version
 what_is_p_value_lab
+adminmrobo-lhopital_lab
+Data_visuialization_lecture_lab
+discrete_topology_lab
+drawing_lab_04
+drawing_lab_fun
+drawing_lab_fun_02
+graph_theory_lab
+karpathy_method_korean
+knn_svc_svm_lab
+labor_economics
+python_machine_learning_lab
