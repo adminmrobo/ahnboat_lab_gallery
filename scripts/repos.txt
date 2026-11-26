@@ -178,3 +178,9 @@ knn_svc_svm_lab
 labor_economics
 python_machine_learning_lab
 drawing_lab_05
+CNN-neural-network-tutorial
+deep_learning_model_design_lab_01
+Dropout-neural-network-tutorial
+LoRA-fine-tuning-tutorial
+math_basic_for_ai_dictionary
+riemann_frontiers_lab
