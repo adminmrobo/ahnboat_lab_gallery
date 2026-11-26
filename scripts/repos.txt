@@ -177,3 +177,4 @@ karpathy_method_korean
 knn_svc_svm_lab
 labor_economics
 python_machine_learning_lab
+drawing_lab_05
