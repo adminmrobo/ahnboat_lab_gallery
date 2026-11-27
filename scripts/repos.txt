@@ -184,3 +184,5 @@ Dropout-neural-network-tutorial
 LoRA-fine-tuning-tutorial
 math_basic_for_ai_dictionary
 riemann_frontiers_lab
+drawing_lab_06
+Regression_model_lab_01
