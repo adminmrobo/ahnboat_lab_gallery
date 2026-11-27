@@ -188,3 +188,4 @@ drawing_lab_06
 Regression_model_lab_01
 polygon_series_lab
 likelihood_vs_probability
+Distance-metrics-tutorial
