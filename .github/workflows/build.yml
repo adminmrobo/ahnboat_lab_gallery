@@ -1,11 +1,11 @@
 name: 갤러리 자동 갱신
 
 # 표지 현황(ahnboat_lab_cover_status)이 바뀌면 그 뒤에 갤러리를 다시 만든다.
-# - 한 시간마다 원본의 최신 커밋을 확인해, 지난번에 만든 뒤로 바뀌었을 때만 실제로 만든다.
+# - 15분마다 원본의 최신 커밋을 확인해, 지난번에 만든 뒤로 바뀌었을 때만 실제로 만든다.
 # - 원본의 수집이 끝날 때 바로 부르는 신호(workflow_dispatch)도 받는다.
 on:
   schedule:
-    - cron: "19 * * * *"
+    - cron: "13,28,43,58 * * * *"
   workflow_dispatch:
     inputs:
       force:

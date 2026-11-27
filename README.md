@@ -31,7 +31,7 @@
 sh scripts/collect.sh          # repos.txt의 저장소를 받아 data/gallery.json, data/prompts.json 다시 만들기
 ```
 
-**자동 갱신**: `.github/workflows/build.yml`이 한 시간마다 표지 현황(ahnboat_lab_cover_status)의 최신 커밋을 확인하고, 지난번에 만든 뒤로 바뀌었으면 갤러리를 다시 만들어 커밋합니다. 표지 현황 수집이 끝날 때 바로 부르는 신호도 받습니다.
+**자동 갱신**: `.github/workflows/build.yml`이 15분마다 표지 현황(ahnboat_lab_cover_status)의 최신 커밋을 확인하고, 지난번에 만든 뒤로 바뀌었으면 갤러리를 다시 만들어 커밋합니다. 표지 현황 수집이 끝날 때 바로 부르는 신호도 받습니다.
 표지 현황에 새로 잡힌 저장소는 `scripts/sync_repos.py`가 `scripts/repos.txt`에 자동으로 더합니다. 넣지 않을 저장소는 `scripts/repos_skip.txt`에 적습니다.
 
 글 · 안상선 ((주)M-Robo 대표)
