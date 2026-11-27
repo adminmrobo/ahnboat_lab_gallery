@@ -190,3 +190,5 @@ polygon_series_lab
 likelihood_vs_probability
 Distance-metrics-tutorial
 Tokenization-BPE-tutorial
+cost_theory_economic_view_lab
+pacing_problem_lab
