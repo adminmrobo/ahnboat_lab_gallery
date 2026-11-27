@@ -192,3 +192,6 @@ Distance-metrics-tutorial
 Tokenization-BPE-tutorial
 cost_theory_economic_view_lab
 pacing_problem_lab
+haru_3d_classic_learning_model_01_lab
+haru_3d_classic_learning_model_02_lab
+haru_3d_optimization_01
